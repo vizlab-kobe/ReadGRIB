@@ -15,7 +15,9 @@
 #pragma once
 
 #include <string>
+#include <vector>
 #include <kvs/FileFormatBase>
+#include "Message.h"
 
 
 namespace ReadGRIB
@@ -23,13 +25,14 @@ namespace ReadGRIB
 
 class GRIB1Data : public kvs::FileFormatBase
 {
+private:
+    std::vector<grib::Message> m_messages;
+
 public:
 
-    GRIB1Data( const std::string& filename )
-    {
-        this->read( filename );
-    }
+    GRIB1Data( const std::string& filename );
 
+    void print( std::ostream& os, const kvs::Indent& indent = kvs::Indent(0) ) const;
     bool read( const std::string& filename );
 
 private:

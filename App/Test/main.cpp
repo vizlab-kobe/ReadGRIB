@@ -10,7 +10,7 @@ class Program : public kvs::Program
     {
         std::string filename( argv[1] );
         ReadGRIB::GRIB1Data data( filename );
-
+        data.print( std::cout );
         return 0;
     }
 };

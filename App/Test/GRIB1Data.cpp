@@ -21,94 +21,47 @@
 namespace ReadGRIB
 {
 
+GRIB1Data::GRIB1Data( const std::string& filename )
+{
+    this->read( filename );
+}
+
+void GRIB1Data::print( std::ostream& os, const kvs::Indent& indent ) const
+{
+    for ( size_t i = 0; i < m_messages.size(); i++ )
+    {
+        os << indent << "Message (" << i << ")" << std::endl;
+        m_messages[i].print( os, indent.nextIndent() );
+    }
+}
+
 bool GRIB1Data::read( const std::string& filename )
 {
     setFilename( filename );
-    setSuccess( false );
+    setSuccess( true );
 
-    FILE* fp = fopen( filename.c_str(), "r" );
-    if ( !fp )
+    std::ifstream ifs( filename.c_str(), std::ios::binary | std::ios::in );
+    if ( !ifs.is_open() )
     {
         kvsMessageError( "Cannot open %s.", filename.c_str() );
+        ifs.close();
+        setSuccess( false );
         return false;
     }
 
-    // Indicator Section
+    while ( !ifs.eof() )
     {
-        std::string code;
+        grib::Message message;
+        if ( !message.read( ifs ) )
         {
-            size_t size = 4;
-            kvs::ValueArray<char> values( size );
-            if ( fread( values.data(), sizeof(char), size, fp ) < size )
-            {
-                kvsMessageError( "Failed to read the value." );
-                return false;
-            }
-
-            code = std::string( values.data(), values.size() );
+            setSuccess( false );
+            return false;
         }
-        std::cout << "code: " << code << std::endl;
 
-        int total_length = 0;
-        {
-            size_t size = 3;
-            kvs::ValueArray<unsigned char> values( size );
-            if ( fread( values.data(), sizeof(unsigned char), size, fp ) < size )
-            {
-                kvsMessageError( "Failed to read the value." );
-                return false;
-            }
-            total_length = int( ( values[0] << 16 ) + ( values[1] << 8 ) + values[2] );
-        }
-        std::cout << "total length: " << total_length << std::endl;
-
-        int edition_number = 0;
-        {
-            size_t size = 1;
-            kvs::ValueArray<unsigned char> values( size );
-            if ( fread( values.data(), sizeof(unsigned char), size, fp ) < size )
-            {
-                kvsMessageError( "Failed to read the value." );
-                return false;
-            }
-
-            edition_number = int( values[0] );
-        }
-        std::cout << "edition number: " << edition_number << std::endl;
+        m_messages.push_back( message );
     }
 
-    // Product Definition Section (PDS)
-    {
-        int length = 0;
-        {
-            size_t size = 3;
-            kvs::ValueArray<unsigned char> values( size );
-            if ( fread( values.data(), sizeof(unsigned char), size, fp ) < size )
-            {
-                kvsMessageError( "Failed to read the value." );
-                return false;
-            }
-            length = int( ( values[0] << 16 ) + ( values[1] << 8 ) + values[2] );
-        }
-        std::cout << "length of PDS: " << length << std::endl;
-
-        int version = 0;
-        {
-            size_t size = 1;
-            kvs::ValueArray<unsigned char> values( size );
-            if ( fread( values.data(), sizeof(unsigned char), size, fp ) < size )
-            {
-                kvsMessageError( "Failed to read the value." );
-                return false;
-            }
-            version = int( values[0] );
-        }
-        std::cout << "parameter table version: " << version << std::endl;
-    }
-
-    fclose( fp );
-
-    return false;
+    return true;
 }
 
 } // end of namespace ReadGRIB
