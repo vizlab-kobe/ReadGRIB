@@ -1,7 +1,7 @@
 #include <iostream>
 #include <string>
 #include <kvs/Program>
-#include "GRIB1Data.h"
+#include "GRIBData.h"
 
 
 class Program : public kvs::Program
@@ -9,7 +9,7 @@ class Program : public kvs::Program
     int exec( int argc, char** argv )
     {
         std::string filename( argv[1] );
-        ReadGRIB::GRIB1Data data( filename );
+        ReadGRIB::GRIBData data( filename );
         data.print( std::cout );
         return 0;
     }

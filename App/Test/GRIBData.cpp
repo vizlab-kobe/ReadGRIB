@@ -12,7 +12,7 @@
  *  $Id$
  */
 /*****************************************************************************/
-#include "GRIB1Data.h"
+#include "GRIBData.h"
 #include <cstdio>
 #include <kvs/ValueArray>
 #include <kvs/Message>
@@ -21,12 +21,12 @@
 namespace ReadGRIB
 {
 
-GRIB1Data::GRIB1Data( const std::string& filename )
+GRIBData::GRIBData( const std::string& filename )
 {
     this->read( filename );
 }
 
-void GRIB1Data::print( std::ostream& os, const kvs::Indent& indent ) const
+void GRIBData::print( std::ostream& os, const kvs::Indent& indent ) const
 {
     for ( size_t i = 0; i < m_messages.size(); i++ )
     {
@@ -35,7 +35,7 @@ void GRIB1Data::print( std::ostream& os, const kvs::Indent& indent ) const
     }
 }
 
-bool GRIB1Data::read( const std::string& filename )
+bool GRIBData::read( const std::string& filename )
 {
     setFilename( filename );
     setSuccess( true );

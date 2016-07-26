@@ -1,6 +1,6 @@
 /*****************************************************************************/
 /**
- *  @file   GRIB1Data.h
+ *  @file   GRIBData.h
  *  @author Naohisa Sakamoto
  */
 /*----------------------------------------------------------------------------
@@ -31,7 +31,12 @@
 namespace ReadGRIB
 {
 
-class GRIB1Data : public kvs::FileFormatBase
+/*===========================================================================*/
+/**
+ *  @brief  GRIB (edition 1) data class
+ */
+/*===========================================================================*/
+class GRIBData : public kvs::FileFormatBase
 {
 public:
 
@@ -43,7 +48,7 @@ private:
 
 public:
 
-    GRIB1Data( const std::string& filename );
+    GRIBData( const std::string& filename );
 
     const Messages& messages() const { return m_messages; }
     const Message& message( const size_t index ) const { return m_messages[index]; }
