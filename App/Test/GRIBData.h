@@ -52,6 +52,7 @@ public:
 
     const Messages& messages() const { return m_messages; }
     const Message& message( const size_t index ) const { return m_messages[index]; }
+    size_t numberOfMessages() const { return m_messages.size(); }
 
     void print( std::ostream& os, const kvs::Indent& indent = kvs::Indent(0) ) const;
     bool read( const std::string& filename );
