@@ -1,129 +1,64 @@
 #include <iostream>
+#include <iomanip>
 #include <string>
+#include <vector>
 #include <kvs/Program>
 #include <kvs/StructuredVolumeObject>
-#include "GRIBData.h"
-
+#include <kvs/glut/Application>
+#include <kvs/glut/Screen>
+#include <kvs/RayCastingRenderer>
+#include <kvs/Bounds>
+#include <kvs/TransferFunction>
+#include <kvs/DivergingColorMap>
+#include <kvs/RGBFormulae>
+#include "Data.h"
 
 namespace
 {
 
-typedef ReadGRIB::GRIBData DataSet;
-typedef kvs::StructuredVolumeObject Object;
+typedef grib::Data Data;
+typedef kvs::StructuredVolumeObject Volume;
 
-
-struct DataDate
+inline void Print( const Data& data )
 {
-    int century;
-    int year;
-    int month;
-    int day;
-
-    int number() const
+    for ( size_t i = 0; i < data.numberOfMessages(); i++ )
     {
-        return ( century - 1 ) * 1000000 + year * 10000 + month * 100 + day;
-    }
-};
-
-struct DataTime
-{
-    int hour;
-    int minute;
-
-    int number() const
-    {
-        return hour * 1000 + minute;
-    }
-};
-
-inline DataSet::Messages Find( const DataSet::Messages& messages, const int parameter_id )
-{
-    DataSet::Messages output;
-    for ( size_t i = 0; i < messages.size(); i++ )
-    {
-        const DataSet::Message& message = messages[i];
-        if ( parameter_id == message.productDefinitionSection().parameterID() )
-        {
-            output.push_back( message );
-        }
-    }
-    return output;
-}
-
-inline DataSet::Messages Find( const DataSet::Messages& messages, const int parameter_id, const DataTime& time )
-{
-    DataSet::Messages output;
-    for ( size_t i = 0; i < messages.size(); i++ )
-    {
-        const DataSet::Message& message = messages[i];
-        if ( parameter_id == message.productDefinitionSection().parameterID() )
-        {
-            const int hour = message.productDefinitionSection().hour();
-            const int minute = message.productDefinitionSection().minute();
-            if ( hour == time.hour && minute == time.minute )
-            {
-                output.push_back( message );
-            }
-        }
-    }
-    return output;
-}
-
-inline DataSet::Messages Find( const DataSet::Messages& messages, const int parameter_id, const DataDate& date )
-{
-    DataSet::Messages output;
-    for ( size_t i = 0; i < messages.size(); i++ )
-    {
-        const DataSet::Message& message = messages[i];
-        if ( parameter_id == message.productDefinitionSection().parameterID() )
-        {
-            const int century = message.productDefinitionSection().century();
-            const int year = message.productDefinitionSection().year();
-            const int month = message.productDefinitionSection().month();
-            const int day = message.productDefinitionSection().day();
-            if ( century == date.century && year == date.year && month == date.month && day == date.day )
-            {
-                output.push_back( message );
-            }
-        }
-    }
-    return output;
-}
-
-inline void Print( const DataSet::Messages& messages )
-{
-    for ( size_t i = 0; i < messages.size(); i++ )
-    {
-        ::DataDate date;
-        date.century = messages[i].productDefinitionSection().century();
-        date.year = messages[i].productDefinitionSection().year();
-        date.month = messages[i].productDefinitionSection().month();
-        date.day = messages[i].productDefinitionSection().day();
-
-        ::DataTime time;
-        time.hour = messages[i].productDefinitionSection().hour();
-        time.minute = messages[i].productDefinitionSection().minute();
-
-        std::cout << i << "," << date.number() << "," << time.number() << std::endl;
+        const Data::Message& message = data.message(i);
+        std::cout << std::setfill('0') << std::setw(5)
+                  << i << ", "
+                  << "("
+                  << std::setfill('0') << std::setw(2)
+                  << message.parameterID() << ") "
+                  << message.date().toString("/") << " - "
+                  << message.time().toString(":") << std::endl;
     }
 }
 
-Object Import( const DataSet::Messages& messages )
+inline Volume* Import( const Data& data )
 {
-    KVS_ASSERT( messages.size() != 0 );
-    KVS_ASSERT( messages.gridDescriptionSection().gridType() == 0 );
+    KVS_ASSERT( data.numberOfMessages() != 0 );
 
-    const size_t dimx = messages[0].gridDescriptionSection().latLonGrid().ni();
-    const size_t dimy = messages[0].gridDescriptionSection().latLonGrid().nj();
-    const size_t dimz = messages.size();
+    const size_t dimx = data.message(0).ni();
+    const size_t dimy = data.message(0).nj();
+    const size_t dimz = data.numberOfMessages();
 
-    std::cout << "dimx = " << dimx << std::endl;
-    std::cout << "dimy = " << dimy << std::endl;
-    std::cout << "dimz = " << dimz << std::endl;
+    kvs::ValueArray<double> values( dimx * dimy * dimz );
+    values.fill(0);
+    for ( size_t i = 0; i < dimz; i++ )
+    {
+        std::copy( data.message(i).values().begin(),
+                   data.message(i).values().end(),
+                   values.begin() + dimx * dimy * i );
+    }
 
-    Object object;
-    object.setResolution( kvs::Vec3u( dimx, dimy, dimz ) );
-    return object;
+    Volume* volume = new Volume();
+    volume->setVeclen( 1 );
+    volume->setResolution( kvs::Vec3u( dimx, dimy, dimz ) );
+    volume->setGridTypeToUniform();
+    volume->setValues( kvs::AnyValueArray( values ) );
+    volume->updateMinMaxValues();
+    volume->updateMinMaxCoords();
+    return volume;
 }
 
 }
@@ -132,20 +67,49 @@ class Program : public kvs::Program
 {
     int exec( int argc, char** argv )
     {
-        std::string filename( argv[1] );
-        ::DataSet data( filename );
+        kvs::glut::Application app( argc, argv );
+        kvs::glut::Screen screen( &app );
+
+        ::Volume* volume = this->import( argv[1] );
+        const float zscale = 10;
+        const kvs::Vec3 min_coord = volume->minExternalCoord();
+        const kvs::Vec3 max_coord = volume->maxExternalCoord() * kvs::Vec3( 1, 1, zscale );
+        volume->setMinMaxExternalCoords( min_coord, max_coord );
+        volume->print( std::cout );
+
+        kvs::Bounds* bounds = new kvs::Bounds();
+        bounds->setLineWidth( 2.0 );
+        bounds->enableAntiAliasing();
+
+        kvs::glsl::RayCastingRenderer* renderer = new kvs::glsl::RayCastingRenderer();
+//        renderer->setTransferFunction( kvs::TransferFunction( kvs::DivergingColorMap::CoolWarm( 256 ) ) );
+        renderer->setTransferFunction( kvs::TransferFunction( kvs::RGBFormulae::Rainbow( 256 ) ) );
+        renderer->disableShading();
+
+        screen.registerObject( volume, bounds );
+        screen.registerObject( volume, renderer );
+        screen.show();
+
+        return app.run();
+    }
+
+    ::Volume* import( const std::string& filename )
+    {
+        FILE* fp = fopen( filename.c_str(), "r" );
+        if ( !fp ) { return NULL; }
+
+        ::Data data;
+        data.parse( fp );
+
+        data = ::Data::Find( data, 2, kvs::Time( 0, 0, 0 ) );
+        data.load();
 //        data.print( std::cout );
 
-        int parameter_id = 2;
-        ::DataTime time;
-        time.hour = 12;
-        time.minute = 0;
-        ::DataSet::Messages messages = ::Find( data.messages(), parameter_id, time );
-        ::Print( messages );
+        ::Volume* volume = ::Import( data );
 
-        ::Object object = ::Import( messages );
+        fclose( fp );
 
-        return 0;
+        return volume;
     }
 };
 

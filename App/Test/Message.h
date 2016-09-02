@@ -3,16 +3,13 @@
 #include <fstream>
 #include <string>
 #include <kvs/Indent>
-#include "IndicatorSection.h"
-#include "ProductDefinitionSection.h"
-#include "GridDescriptionSection.h"
-#include "BitMapSection.h"
-#include "BinaryDataSection.h"
-#include "EndSection.h"
+#include <kvs/SharedPointer>
+#include <kvs/Date>
+#include <kvs/Time>
+#include <kvs/ValueArray>
+#include "GRIB.h"
+#include "Handle.h"
 
-
-namespace ReadGRIB
-{
 
 namespace grib
 {
@@ -20,28 +17,37 @@ namespace grib
 class Message
 {
 private:
-    grib::IndicatorSection m_indicator_section;
-    grib::ProductDefinitionSection m_product_definition_section;
-    grib::GridDescriptionSection m_grid_description_section;
-    grib::BitMapSection m_bit_map_section;
-    grib::BinaryDataSection m_binary_data_section;
-    grib::EndSection m_end_section;
+    kvs::SharedPointer<Handle> m_handle;
+    int m_ni;
+    int m_nj;
+    int m_parameter_id;
+    kvs::Date m_date;
+    kvs::Time m_time;
+    double m_min_value;
+    double m_max_value;
+    double m_average_value;
+    kvs::ValueArray<double> m_values;
 
 public:
+    Message(){}
 
-    Message();
+    bool hasError() const { return m_handle->hasError(); }
+    bool isValid() const { return m_handle->isValid(); }
 
-    const grib::IndicatorSection& indicatorSection() const { return m_indicator_section; }
-    const grib::ProductDefinitionSection& productDefinitionSection() const { return m_product_definition_section; }
-    const grib::GridDescriptionSection& gridDescriptionSection() const { return m_grid_description_section; }
-    const grib::BitMapSection& bitmapSection() const { return m_bit_map_section; }
-    const grib::BinaryDataSection& binaryDataSection() const { return m_binary_data_section; }
-    const grib::EndSection& endSection() const { return m_end_section; }
+    int ni() const { return m_ni; }
+    int nj() const { return m_nj; }
+    int parameterID() const { return m_parameter_id; }
+    const kvs::Date& date() const { return m_date; }
+    const kvs::Time& time() const { return m_time; }
+    double minValue() const { return m_min_value; }
+    double maxValue() const { return m_max_value; }
+    double averageValue() const { return m_average_value; }
+    const kvs::ValueArray<double>& values() const { return m_values; }
 
     void print( std::ostream& os, const kvs::Indent& indent = kvs::Indent(0) ) const;
-    bool read( std::ifstream& ifs );
+    bool read( FILE* fp );
+    bool parse( FILE* fp );
+    bool load();
 };
 
-} // end of namespace grib
-
-} // end of namespace ReadGRIB
+}
