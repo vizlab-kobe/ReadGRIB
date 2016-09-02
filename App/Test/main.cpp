@@ -11,12 +11,13 @@
 #include <kvs/TransferFunction>
 #include <kvs/DivergingColorMap>
 #include <kvs/RGBFormulae>
-#include "Data.h"
+#include <Lib/GRIBData.h>
+
 
 namespace
 {
 
-typedef grib::Data Data;
+typedef ReadGRIB::GRIBData Data;
 typedef kvs::StructuredVolumeObject Volume;
 
 inline void Print( const Data& data )

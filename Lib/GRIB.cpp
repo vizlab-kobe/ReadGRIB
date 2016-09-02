@@ -2,6 +2,9 @@
 #include <kvs/Message>
 
 
+namespace ReadGRIB
+{
+
 namespace grib
 {
 
@@ -17,6 +20,8 @@ bool HasError( const int error )
     const std::string error_message = GetErrorMessage( error );
     kvsMessageError( "%s", error_message.c_str() );
     return false;
+}
+
 }
 
 }

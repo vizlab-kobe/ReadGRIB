@@ -1,6 +1,9 @@
 #include "Handle.h"
 
 
+namespace ReadGRIB
+{
+
 namespace grib
 {
 
@@ -74,4 +77,6 @@ kvs::ValueArray<double> Handle::getValueArray<double>( const std::string& key )
     return values;
 }
 
-}
+} // end of namespace grib
+
+} // end of namespace ReadGRIB

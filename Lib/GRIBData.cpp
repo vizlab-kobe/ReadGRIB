@@ -1,15 +1,15 @@
-#include "Data.h"
+#include "GRIBData.h"
 #include <cstdio>
 #include <kvs/ValueArray>
 #include <kvs/Message>
 
 
-namespace grib
+namespace ReadGRIB
 {
 
-Data Data::Find( const Data& data, const int parameter_id )
+GRIBData GRIBData::Find( const GRIBData& data, const int parameter_id )
 {
-    Data output;
+    GRIBData output;
     for ( size_t i = 0; i < data.numberOfMessages(); i++ )
     {
         const Message& message = data.message(i);
@@ -21,9 +21,9 @@ Data Data::Find( const Data& data, const int parameter_id )
     return output;
 }
 
-Data Data::Find( const Data& data, const int parameter_id, const kvs::Date& date )
+GRIBData GRIBData::Find( const GRIBData& data, const int parameter_id, const kvs::Date& date )
 {
-    Data output;
+    GRIBData output;
     for ( size_t i = 0; i < data.numberOfMessages(); i++ )
     {
         const Message& message = data.message(i);
@@ -38,9 +38,9 @@ Data Data::Find( const Data& data, const int parameter_id, const kvs::Date& date
     return output;
 }
 
-Data Data::Find( const Data& data, const int parameter_id, const kvs::Time& time )
+GRIBData GRIBData::Find( const GRIBData& data, const int parameter_id, const kvs::Time& time )
 {
-    Data output;
+    GRIBData output;
     for ( size_t i = 0; i < data.numberOfMessages(); i++ )
     {
         const Message& message = data.message(i);
@@ -55,12 +55,12 @@ Data Data::Find( const Data& data, const int parameter_id, const kvs::Time& time
     return output;
 }
 
-Data::Data( FILE* fp )
+GRIBData::GRIBData( FILE* fp )
 {
     this->read( fp );
 }
 
-void Data::print( std::ostream& os, const kvs::Indent& indent ) const
+void GRIBData::print( std::ostream& os, const kvs::Indent& indent ) const
 {
     for ( size_t i = 0; i < m_messages.size(); i++ )
     {
@@ -69,7 +69,7 @@ void Data::print( std::ostream& os, const kvs::Indent& indent ) const
     }
 }
 
-bool Data::read( FILE* fp )
+bool GRIBData::read( FILE* fp )
 {
     KVS_ASSERT( fp );
 
@@ -78,7 +78,7 @@ bool Data::read( FILE* fp )
     return true;
 }
 
-bool Data::parse( FILE* fp )
+bool GRIBData::parse( FILE* fp )
 {
     KVS_ASSERT( fp );
 
@@ -97,7 +97,7 @@ bool Data::parse( FILE* fp )
     return true;
 }
 
-bool Data::load()
+bool GRIBData::load()
 {
     for ( size_t i = 0; i < m_messages.size(); i++ )
     {
@@ -107,4 +107,4 @@ bool Data::load()
     return true;
 }
 
-}
+} // end of namespace ReadGRIB

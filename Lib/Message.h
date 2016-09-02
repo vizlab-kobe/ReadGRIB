@@ -11,6 +11,9 @@
 #include "Handle.h"
 
 
+namespace ReadGRIB
+{
+
 namespace grib
 {
 
@@ -50,4 +53,6 @@ public:
     bool load();
 };
 
-}
+} // end of namespace grib
+
+} // end of namespace ReadGRIB

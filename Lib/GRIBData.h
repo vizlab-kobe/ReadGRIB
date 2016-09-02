@@ -6,10 +6,10 @@
 #include "Message.h"
 
 
-namespace grib
+namespace ReadGRIB
 {
 
-class Data
+class GRIBData
 {
 public:
 
@@ -17,16 +17,16 @@ public:
     typedef std::vector<Message> Messages;
 
 public:
-    static Data Find( const Data& data, const int parameter_id );
-    static Data Find( const Data& data, const int parameter_id, const kvs::Date& date );
-    static Data Find( const Data& data, const int parameter_id, const kvs::Time& time );
+    static GRIBData Find( const GRIBData& data, const int parameter_id );
+    static GRIBData Find( const GRIBData& data, const int parameter_id, const kvs::Date& date );
+    static GRIBData Find( const GRIBData& data, const int parameter_id, const kvs::Time& time );
 
 private:
     Messages m_messages;
 
 public:
-    Data(){}
-    Data( FILE* fp );
+    GRIBData(){}
+    GRIBData( FILE* fp );
 
     const Messages& messages() const { return m_messages; }
     const Message& message( const size_t index ) const { return m_messages[index]; }
@@ -43,4 +43,4 @@ private:
     bool write( const std::string& ) { return false; }
 };
 
-}
+} // end of namespace ReadGRIB

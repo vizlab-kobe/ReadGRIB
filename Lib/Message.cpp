@@ -3,6 +3,9 @@
 #include "GRIB.h"
 
 
+namespace ReadGRIB
+{
+
 namespace grib
 {
 
@@ -78,4 +81,6 @@ bool Message::load()
     return true;
 }
 
-}
+} // end of namespace grib
+
+} // end of namespace ReadGRIB

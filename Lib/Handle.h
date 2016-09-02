@@ -3,6 +3,9 @@
 #include <kvs/ValueArray>
 
 
+namespace ReadGRIB
+{
+
 namespace grib
 {
 
@@ -37,4 +40,6 @@ template <> double Handle::getValue<double>( const std::string& key );
 template <> kvs::ValueArray<long> Handle::getValueArray<long>( const std::string& key );
 template <> kvs::ValueArray<double> Handle::getValueArray<double>( const std::string& key );
 
-}
+} // end of namespace glib
+
+} // end of namespace ReadGRIB
