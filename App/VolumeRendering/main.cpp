@@ -9,7 +9,6 @@
 #include <kvs/RayCastingRenderer>
 #include <kvs/Bounds>
 #include <kvs/TransferFunction>
-#include <kvs/DivergingColorMap>
 #include <kvs/RGBFormulae>
 #include <Lib/GRIBData.h>
 
@@ -80,10 +79,8 @@ class Program : public kvs::Program
 
         kvs::Bounds* bounds = new kvs::Bounds();
         bounds->setLineWidth( 2.0 );
-        bounds->enableAntiAliasing();
 
         kvs::glsl::RayCastingRenderer* renderer = new kvs::glsl::RayCastingRenderer();
-//        renderer->setTransferFunction( kvs::TransferFunction( kvs::DivergingColorMap::CoolWarm( 256 ) ) );
         renderer->setTransferFunction( kvs::TransferFunction( kvs::RGBFormulae::Rainbow( 256 ) ) );
         renderer->disableShading();
 
@@ -104,7 +101,7 @@ class Program : public kvs::Program
 
         data = ::Data::Find( data, 2, kvs::Time( 0, 0, 0 ) );
         data.load();
-//        data.print( std::cout );
+        ::Print( data );
 
         ::Volume* volume = ::Import( data );
 
