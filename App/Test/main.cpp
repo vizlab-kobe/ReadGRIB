@@ -17,9 +17,6 @@ class Program : public kvs::Program
 
         Data data;
         data.parse( fp );
-
-        data = Data::Find( data, 2, kvs::Time( 0, 0, 0 ) );
-        data.load();
         data.print( std::cout );
 
         fclose( fp );
